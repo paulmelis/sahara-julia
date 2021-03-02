@@ -1,7 +1,7 @@
 #Base.GC.enable(false)
 
 #using InteractiveUtils
-using ProgressBars
+using ProgressMeter
 #using BenchmarkTools
 using Random
 using Distributions
@@ -42,14 +42,14 @@ function main()
     #IMAGE_WIDTH = IMAGE_HEIGHT = 32
     #IMAGE_WIDTH = IMAGE_HEIGHT = 128
     #IMAGE_WIDTH = IMAGE_HEIGHT = 256
-    IMAGE_WIDTH = IMAGE_HEIGHT = 512
-    #IMAGE_WIDTH = IMAGE_HEIGHT = 1024
+    #IMAGE_WIDTH = IMAGE_HEIGHT = 512
+    IMAGE_WIDTH = IMAGE_HEIGHT = 1024
 
     #SQRT_NUM_SAMPLES = 1
     #SQRT_NUM_SAMPLES = 2
-    SQRT_NUM_SAMPLES = 4
+    #SQRT_NUM_SAMPLES = 4
     #SQRT_NUM_SAMPLES = 8
-    #SQRT_NUM_SAMPLES = 16
+    SQRT_NUM_SAMPLES = 16
     #SQRT_NUM_SAMPLES = 32
 
     #integrator = "direct"
@@ -57,8 +57,6 @@ function main()
 
     framebuffer = Framebuffer(IMAGE_WIDTH, IMAGE_HEIGHT)
     
-    println(vec3(0.5f0, 0.0f0, 0.5f0))
-
     camera = PerspectiveCamera(framebuffer,
         vec3(0.5, -3, 0.5),
         vec3(0.5, 0, 0.5),
@@ -69,18 +67,18 @@ function main()
 
     primitives = [
         Sphere(0.1,
-            mat4_rot_x(90)*mat4_rot_z(-30)*mat4_translate(0.05,0,0.5),
+            mat4_translate(0.05,0,0.5)*mat4_rot_z(30)*mat4_rot_x(-90),
             zmin=-0.05, zmax=0.05),
         Sphere(0.1,
             mat4_translate(0.2,0,0.2)),
         Sphere(0.3,
-            mat4_rot_y(30)*mat4_rot_z(-40)*mat4_translate(0.5,0,0.5),
+            mat4_translate(0.5,0,0.5)*mat4_rot_z(40)*mat4_rot_y(-30),
             zmin=-0.2, zmax=0.2),
         Sphere(0.1, # Move back
-            mat4_rot_x(-50)*mat4_translate(0.6,0,0.7),
+            mat4_translate(0.6,0,0.7)*mat4_rot_x(50),
             zmin=-0.035, zmax=0.035),
         Sphere(0.1,
-            mat4_rot_x(60)*mat4_rot_z(15)*mat4_translate(0.7,-1,0.1),
+            mat4_translate(0.7,-1,0.1)*mat4_rot_z(-15)*mat4_rot_x(-60),
             zmin=-0.08, zmax=0.08),
 
         Plane(vec3(0,0,0), vec3(0,0,1), mat4_identity())
@@ -109,14 +107,15 @@ function main()
 
     output_image = zeros(RGB{Float32}, IMAGE_HEIGHT, IMAGE_WIDTH)
     
-    println("Starting rendering with $(Threads.nthreads()) threads")
+    println("Starting rendering $(IMAGE_WIDTH)x$(IMAGE_HEIGHT), $(SQRT_NUM_SAMPLES*SQRT_NUM_SAMPLES) spp, $(Threads.nthreads()) threads")
     
-    # @qthreads doesn't handle generator?
+    # @qthreads doesn't handle generator?    
     bucket_order = collect(buckets_reading_order(IMAGE_WIDTH, IMAGE_HEIGHT, crop_window))
     
-    #for bucket::Tuple{Int,Int,Int,Int} in ProgressBar(bucket_order)
-    @qthreads for bucket::Tuple{Int,Int,Int,Int} in ProgressBar(bucket_order)
+    progress = Progress(length(bucket_order))
     
+    #for bucket::Tuple{Int,Int,Int,Int} in ProgressBar(bucket_order)
+    @qthreads for bucket::Tuple{Int,Int,Int,Int} in bucket_order
         #println("Processing bucket $(bucket)")
         pixels = process_bucket(scene_data, bucket)
         #println(pixels)
@@ -125,8 +124,10 @@ function main()
         top = bucket[2]+1
         
         lock(image_lock) do
-            output_image[top:top+BUCKET_SIZE-1, left:left+BUCKET_SIZE-1] .= pixels
+            output_image[top:top+BUCKET_SIZE-1, left:left+BUCKET_SIZE-1] .= pixels            
         end
+        
+        next!(progress)
         
     end
     
