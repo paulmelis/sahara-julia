@@ -113,19 +113,22 @@ function main()
     # @qthreads doesn't handle generator?    
     bucket_order = collect(buckets_reading_order(IMAGE_WIDTH, IMAGE_HEIGHT, crop_window))
     
+    overall_ray_stats = RayStats()
+    
     progress = Progress(length(bucket_order))
     
     #for bucket::Tuple{Int,Int,Int,Int} in ProgressBar(bucket_order)
     @qthreads for bucket::Tuple{Int,Int,Int,Int} in bucket_order
         #println("Processing bucket $(bucket)")
-        pixels = process_bucket(scene_data, bucket)
+        pixels, ray_stats = process_bucket(scene_data, bucket)
         #println(pixels)
         
         left = bucket[1]+1
         top = bucket[2]+1
         
-        lock(image_lock) do
+        lock(image_lock) do        
             output_image[top:top+BUCKET_SIZE-1, left:left+BUCKET_SIZE-1] .= pixels            
+            add!(overall_ray_stats, ray_stats)
         end
         
         ProgressMeter.next!(progress)
@@ -145,6 +148,8 @@ function main()
     #    # XXX lock image
     #    
     #end
+    
+    println(overall_ray_stats)
     
     println("Saving output file")
 

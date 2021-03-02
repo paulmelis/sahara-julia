@@ -13,19 +13,12 @@ function in_shadow(scene_primitives, ray)
     
 end
 
-function worker()
-
-    num_primary_rays = 0
-    num_shadow_rays = 0
-    num_indirect_rays = 0
-
-end
-
-function compute_radiance(scene_primitives::Vector{Primitive}, lights::Vector{Light}, ray::Ray, indirect=true) ::vec3
+function compute_radiance(scene_primitives::Vector{Primitive}, lights::Vector{Light}, ray::Ray, ray_stats::RayStats, indirect=true) ::vec3
 
     #print('compute_radiance', ray)
     
     num_indirect_rays = 0
+    num_shadow_rays = 0
     
     best_ip::Union{IntersectionPoint, Nothing} = nothing
     best_prim::Union{Primitive, Nothing} = nothing
@@ -74,6 +67,7 @@ function compute_radiance(scene_primitives::Vector{Primitive}, lights::Vector{Li
         L = light_position - ip_p
         Ln = normalized(L)
         sray = Ray(ip_p + 0.0001f0*Ln, L, 1.0f0)
+        num_shadow_rays += 1
 
         if in_shadow(scene_primitives, sray)
             continue
@@ -115,7 +109,7 @@ function compute_radiance(scene_primitives::Vector{Primitive}, lights::Vector{Li
 
             #print('tracing indirect ray', r2)
 
-            rad2 = compute_radiance(scene_primitives, lights, r2, indirect)
+            rad2 = compute_radiance(scene_primitives, lights, r2, ray_stats, indirect)
             radiance += rad2 * dot(ip_n, d) / MATERIAL_REFLECTIVITY
 
             num_indirect_rays += 1
@@ -125,6 +119,9 @@ function compute_radiance(scene_primitives::Vector{Primitive}, lights::Vector{Li
         #else:
             #print('NOT tracing indirect ray')
     end
+    
+    ray_stats.num_indirect_rays += num_indirect_rays
+    ray_stats.num_shadow_rays += num_shadow_rays
 
     #print('returning (unclamped)', radiance)
 
@@ -132,6 +129,8 @@ function compute_radiance(scene_primitives::Vector{Primitive}, lights::Vector{Li
 end
 
 function process_bucket(scene_data, bucket)
+
+    ray_stats = RayStats()
 
     bucket_left, bucket_top, bucket_width, bucket_height = bucket
     crop_window = scene_data.crop_window
@@ -147,7 +146,6 @@ function process_bucket(scene_data, bucket)
     pixel_sample_locations = scene_data.pixel_sample_locations
     num_samples = length(pixel_sample_locations)
     
-    num_primary_rays = 0
 
     # Mini-framebuffer to hold this bucket's final pixel values    
     pixels = zeros(RGB{Float32}, bucket_width, bucket_height) 
@@ -186,19 +184,19 @@ function process_bucket(scene_data, bucket)
 
                 # Trace it
                 # XXX store local prims
-                radiance_sum += compute_radiance(scene_data.primitives, scene_data.lights, r, compute_radiance_indirect)
+                radiance_sum += compute_radiance(scene_data.primitives, scene_data.lights, r, ray_stats, compute_radiance_indirect)
                 
             end
 
             color = radiance_sum / num_samples
             pixels[j+1,i+1] = RGB(color[1], color[2], color[3])
 
-            num_primary_rays += num_samples
+            ray_stats.num_primary_rays += num_samples
             
         end
 
     end
 
-    return pixels
+    return pixels, ray_stats
 end
     

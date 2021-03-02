@@ -19,6 +19,22 @@ function transform(r::Ray, xform::mat4)
 end
 
 
+mutable struct RayStats
+    num_primary_rays::Int
+    num_shadow_rays::Int
+    num_indirect_rays::Int
+    
+    RayStats() = new(0, 0, 0)
+end
+
+function add!(r::RayStats, other::RayStats)
+    r.num_primary_rays += other.num_primary_rays
+    r.num_shadow_rays += other.num_shadow_rays
+    r.num_indirect_rays += other.num_indirect_rays
+end
+
+
+
 struct IntersectionPoint
     t::Float32
     p::vec3
