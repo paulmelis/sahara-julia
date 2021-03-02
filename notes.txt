@@ -1,0 +1,7 @@
+Still have way too many allocations
+
+3D scene doesn't match python version
+
+https://discourse.julialang.org/t/custom-array-for-3d-matrix-operations-4x4/16568/6
+
+https://github.com/JuliaGeometry/CoordinateTransformations.jl
