@@ -28,6 +28,8 @@ function generate_stratified_samples(n) ::Vector{Tuple{Float32,Float32}}
             left = i * cell_size
             x = rand()*cell_size
             y = rand()*cell_size
+            @assert x >= 0 && x <= 1
+            @assert y >= 0 && y <= 1
             push!(res, (left+x, top+y))
         end
     end

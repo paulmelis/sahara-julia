@@ -1,5 +1,3 @@
-#Base.GC.enable(false)
-
 #using InteractiveUtils
 using ProgressMeter
 #using BenchmarkTools
@@ -11,6 +9,7 @@ using Base.Threads
 using ThreadPools
 using LinearAlgebra
 using StaticArrays
+using Sobol
 import Base.length
 import Base.+, Base.-, Base.*
 import Base.^
@@ -42,14 +41,14 @@ function main()
     #IMAGE_WIDTH = IMAGE_HEIGHT = 32
     #IMAGE_WIDTH = IMAGE_HEIGHT = 128
     #IMAGE_WIDTH = IMAGE_HEIGHT = 256
-    #IMAGE_WIDTH = IMAGE_HEIGHT = 512
-    IMAGE_WIDTH = IMAGE_HEIGHT = 1024
+    IMAGE_WIDTH = IMAGE_HEIGHT = 512
+    #IMAGE_WIDTH = IMAGE_HEIGHT = 1024
 
     #SQRT_NUM_SAMPLES = 1
     #SQRT_NUM_SAMPLES = 2
     #SQRT_NUM_SAMPLES = 4
-    #SQRT_NUM_SAMPLES = 8
-    SQRT_NUM_SAMPLES = 16
+    SQRT_NUM_SAMPLES = 8
+    #SQRT_NUM_SAMPLES = 16
     #SQRT_NUM_SAMPLES = 32
 
     #integrator = "direct"
@@ -91,6 +90,8 @@ function main()
     
     # XXX use sobol sequence instead, for (most likely) lower variance with same number of samples
     pixel_sample_locations = generate_stratified_samples(SQRT_NUM_SAMPLES)
+    #s = SobolSeq(2)
+    #pixel_sample_locations = [Tuple{Float32,Float32}(Sobol.next!(s)) for i = 1:(SQRT_NUM_SAMPLES*SQRT_NUM_SAMPLES)]
     
     # crop_window = (left, top, right, bottom), all inclusive
     crop_window = nothing
@@ -127,7 +128,7 @@ function main()
             output_image[top:top+BUCKET_SIZE-1, left:left+BUCKET_SIZE-1] .= pixels            
         end
         
-        next!(progress)
+        ProgressMeter.next!(progress)
         
     end
     
@@ -154,5 +155,10 @@ end
 @time main()
 
 #using Profile
+
 #Profile.clear_malloc_data()
-#main()
+#@profile main()
+
+#@profile main()
+#save("main.jlprof",  Profile.retrieve()...)
+
