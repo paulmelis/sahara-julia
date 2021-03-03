@@ -74,7 +74,7 @@ function compute_radiance(scene_primitives::Vector{Primitive}, lights::Vector{Li
         end
 
         # XXX apparently this allocates?
-        f::Float32 = dot(Ln, ip_n) * light.strength
+        f::Float32 = dot(Ln, ip_n) * strength(light) #light.strength 
         if f > 0
             radiance += vec3(f, f, f)
         end
@@ -185,6 +185,7 @@ function process_bucket(scene_data, bucket)
                 # Trace it
                 # XXX store local prims
                 radiance_sum += compute_radiance(scene_data.primitives, scene_data.lights, r, ray_stats, compute_radiance_indirect)
+                #doh!()
                 
             end
 

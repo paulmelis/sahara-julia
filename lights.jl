@@ -7,12 +7,14 @@ end
 
 get_random_position(p::PointLight) = p.position
 
-
 # Hemisphere covering positive Z-axis, centered at origin
 struct HemisphericalLight <: Light
     radius::Float32
     strength::Float32
 end
+
+strength(p::PointLight) = p.strength
+strength(h::HemisphericalLight) = h.strength
 
 function get_random_position(h::HemisphericalLight)
     pos = random_sphere_position()
