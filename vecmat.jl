@@ -30,13 +30,13 @@ const mat4 = MMatrix{4,4,Float32}
 mat4_zero() = zeros(mat4)
 mat4_identity() = mat4(I)
 
-function mat4_translate(tx, ty, tz)
+function mat4_translate(tx, ty, tz) ::mat4
     m = mat4_identity()
     m[:,4] .= (tx, ty, tz, 1)
     return SMatrix(m)
 end
 
-function mat4_scale(sx, sy, sz)
+function mat4_scale(sx, sy, sz) ::mat4
     m = mat4_identity()
     m[1,1] = sx
     m[2,2] = sy
@@ -44,7 +44,7 @@ function mat4_scale(sx, sy, sz)
     return SMatrix(m)
 end
 
-function mat4_rot_x(angle)
+function mat4_rot_x(angle) ::mat4
     angle_r = deg2rad(angle)
     c = cos(angle_r)
     s = sin(angle_r)
@@ -57,7 +57,7 @@ function mat4_rot_x(angle)
     return SMatrix(m)
 end
 
-function mat4_rot_y(angle)
+function mat4_rot_y(angle) ::mat4
     angle_r = deg2rad(angle)
     c = cos(angle_r)
     s = sin(angle_r)
@@ -70,7 +70,7 @@ function mat4_rot_y(angle)
     return SMatrix(m)
 end
 
-function mat4_rot_z(angle)
+function mat4_rot_z(angle) ::mat4
     angle_r = deg2rad(angle)
     c = cos(angle_r)
     s = sin(angle_r)
@@ -83,7 +83,7 @@ function mat4_rot_z(angle)
     return SMatrix(m)
 end
 
-function mat4_rotate(angle, x, y, z)
+function mat4_rotate(angle, x, y, z) ::mat4
     # normalize axis if needed
     l = sqrt(x*x + y*y + z*z)
     if abs(l-1.0) > EPSILON
@@ -122,7 +122,7 @@ Transform point p. Assumes p[4] == 1 and homogenizes the result
 XXX do we ever use homogenized coordinates? I.e. we don't use perspective
 transforms anywhere
 """
-function ptransform(M::mat4, p::vec3)
+function ptransform(M::mat4, p::vec3) ::vec3
 
     inv_d = 1.0f0 / (M[4,1]*p.x + M[4,2]*p.y + M[4,3]*p.z + M[4,4])
     
@@ -137,7 +137,7 @@ end
 """
 Transform vector v. Assumes p[4] == 0, i.e. disregards translation.
 """
-function vtransform(M::mat4, v::vec3)
+function vtransform(M::mat4, v::vec3) ::vec3
 
     return vec3(
         (M[1,1]*v.x + M[1,2]*v.y + M[1,3]*v.z),
@@ -151,7 +151,7 @@ end
 Transform normal n, i.e. transform with (M^-1)^T disregarding
 any translation. Assumes |n| = 1
 """
-function ntransform(M::mat4, n::vec3)
+function ntransform(M::mat4, n::vec3) ::vec3
 
     T = transpose(inv(M))
 

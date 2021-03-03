@@ -1,4 +1,4 @@
-#using InteractiveUtils
+using InteractiveUtils
 using ProgressMeter
 using BenchmarkTools
 using Random
@@ -46,9 +46,9 @@ function render(seed)
 
     #SQRT_NUM_SAMPLES = 1
     #SQRT_NUM_SAMPLES = 2
-    #SQRT_NUM_SAMPLES = 4
+    SQRT_NUM_SAMPLES = 4
     #SQRT_NUM_SAMPLES = 8
-    SQRT_NUM_SAMPLES = 16
+    #SQRT_NUM_SAMPLES = 16
     #SQRT_NUM_SAMPLES = 32
 
     #integrator = "direct"
@@ -154,6 +154,8 @@ function render(seed)
     return output_image
 end
 
+using Profile
+
 output_image = @btime render(123456)
 
 println("Saving output file")
@@ -161,11 +163,9 @@ println("Saving output file")
 #save(File(format"PNG", "out.png"), output_image)
 save(File(format"TIFF", "out.tif"), output_image)
 
-#using Profile
-
 #Profile.clear_malloc_data()
-#@profile main()
 
-#@profile main()
+#@profile render(123456)
 #save("main.jlprof",  Profile.retrieve()...)
+
 
