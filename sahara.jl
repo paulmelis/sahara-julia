@@ -1,6 +1,6 @@
 #using InteractiveUtils
 using ProgressMeter
-#using BenchmarkTools
+using BenchmarkTools
 using Random
 using Distributions
 using FileIO, PNGFiles
@@ -24,8 +24,6 @@ include("camera.jl")
 include("lights.jl")
 include("worker.jl")
 
-Random.seed!(123456)
-
 # https://discourse.julialang.org/t/print-functions-in-a-threaded-loop/12112/8?u=paulmelis
 const print_lock = SpinLock()
 const image_lock = SpinLock()
@@ -36,7 +34,9 @@ function safe_print(s)
     end
 end
 
-function main()
+function render(seed)
+
+    Random.seed!(seed)
 
     #IMAGE_WIDTH = IMAGE_HEIGHT = 32
     #IMAGE_WIDTH = IMAGE_HEIGHT = 128
@@ -47,8 +47,8 @@ function main()
     #SQRT_NUM_SAMPLES = 1
     #SQRT_NUM_SAMPLES = 2
     #SQRT_NUM_SAMPLES = 4
-    SQRT_NUM_SAMPLES = 8
-    #SQRT_NUM_SAMPLES = 16
+    #SQRT_NUM_SAMPLES = 8
+    SQRT_NUM_SAMPLES = 16
     #SQRT_NUM_SAMPLES = 32
 
     #integrator = "direct"
@@ -151,13 +151,15 @@ function main()
     
     println(overall_ray_stats)
     
-    println("Saving output file")
-
-    #save(File(format"PNG", "out.png"), output_image)
-    save(File(format"TIFF", "out.tif"), output_image)
+    return output_image
 end
 
-@time main()
+output_image = @btime render(123456)
+
+println("Saving output file")
+
+#save(File(format"PNG", "out.png"), output_image)
+save(File(format"TIFF", "out.tif"), output_image)
 
 #using Profile
 
