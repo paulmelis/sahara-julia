@@ -154,6 +154,13 @@ function render(seed)
     return output_image
 end
 
+#ray = Ray(vec3(), vec3(1,1,1))
+#sphere = Sphere(0.1,
+#            mat4_translate(0.05,0,0.5)*mat4_rot_z(30)*mat4_rot_x(-90),
+#            zmin=-0.05, zmax=0.05)
+#@code_warntype intersection(sphere, ray)
+#doh!()
+
 using Profile
 
 output_image = @btime render(123456)

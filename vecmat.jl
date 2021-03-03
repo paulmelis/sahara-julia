@@ -25,7 +25,7 @@ normalized(v::vec3) = v / norm(v)
     v.x*w.y - v.y*w.x
 )
 
-const mat4 = MMatrix{4,4,Float32}
+const mat4 = MMatrix{4,4,Float32,16}
 
 mat4_zero() = zeros(mat4)
 mat4_identity() = mat4(I)
