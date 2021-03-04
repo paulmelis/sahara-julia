@@ -1,5 +1,3 @@
-Still have way too many allocations
-
 https://discourse.julialang.org/t/custom-array-for-3d-matrix-operations-4x4/16568/6
 
 https://github.com/JuliaGeometry/CoordinateTransformations.jl

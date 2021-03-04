@@ -1,6 +1,3 @@
-
-
-
 function in_shadow(scene_primitives, ray)
 
     for prim in scene_primitives
@@ -23,7 +20,7 @@ function compute_radiance(scene_primitives::Vector{Primitive}, lights::Vector{Li
     best_ip::Union{IntersectionPoint, Nothing} = nothing
     best_prim::Union{Primitive, Nothing} = nothing
     
-    for prim::Primitive in scene_primitives
+    for prim in scene_primitives
 
         ip = intersection(prim, ray)
         if ip === nothing
@@ -59,7 +56,7 @@ function compute_radiance(scene_primitives::Vector{Primitive}, lights::Vector{Li
 
     radiance = vec3(0, 0, 0)
 
-    for light::Light in lights
+    for light in lights
 
         light_position = get_random_position(light)
 
@@ -73,8 +70,7 @@ function compute_radiance(scene_primitives::Vector{Primitive}, lights::Vector{Li
             continue
         end
 
-        # XXX apparently this allocates?
-        f::Float32 = dot(Ln, ip_n) * strength(light) #light.strength 
+        f = dot(Ln, ip_n) * strength(light)
         if f > 0
             radiance += vec3(f, f, f)
         end
@@ -185,7 +181,6 @@ function process_bucket(scene_data, bucket)
                 # Trace it
                 # XXX store local prims
                 radiance_sum += compute_radiance(scene_data.primitives, scene_data.lights, r, ray_stats, compute_radiance_indirect)
-                #doh!()
                 
             end
 
