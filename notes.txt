@@ -1,3 +1,6 @@
+threads each have a local RNG, which should use the same seed
+
+
 https://discourse.julialang.org/t/custom-array-for-3d-matrix-operations-4x4/16568/6
 
 https://github.com/JuliaGeometry/CoordinateTransformations.jl

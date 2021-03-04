@@ -42,6 +42,8 @@ end
 such that u, v and w form an orthonormal basis.
 See Shirley et.al., 2.4.6"""
 
+# Pick alternative from http://psgraphics.blogspot.com/2014/11/making-orthonormal-basis-from-unit.html?
+
 function create_orthonormal_basis(w) ::Tuple{vec3,vec3}
 
     @assert (abs(norm(w) - 1.0) < 1.0e-6)

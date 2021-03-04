@@ -92,7 +92,7 @@ function mat4_rotate(angle, x, y, z) ::mat4
         z /= l
     end
 
-    res = mat4_zero()
+    m = mat4_zero()
 
     angle_r = deg2rad(angle)
     c = cos(angle_r)
