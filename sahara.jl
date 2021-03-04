@@ -24,8 +24,7 @@ include("camera.jl")
 include("lights.jl")
 include("worker.jl")
 
-# https://discourse.julialang.org/t/print-functions-in-a-threaded-loop/12112/8?u=paulmelis
-const print_lock = SpinLock()
+# https://discourse.julialang.org/t/print-functions-in-a-threaded-loop/12112/8
 const image_lock = SpinLock()
 
 function safe_print(s)
@@ -48,9 +47,9 @@ function render(seed)
 
     #SQRT_NUM_SAMPLES = 1
     #SQRT_NUM_SAMPLES = 2
-    #SQRT_NUM_SAMPLES = 4
+    SQRT_NUM_SAMPLES = 4
     #SQRT_NUM_SAMPLES = 8
-    SQRT_NUM_SAMPLES = 16
+    #SQRT_NUM_SAMPLES = 16
     #SQRT_NUM_SAMPLES = 32
 
     #integrator = "direct"

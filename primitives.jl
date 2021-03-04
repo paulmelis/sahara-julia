@@ -77,10 +77,6 @@ intersection(sphere::Sphere, ray::Ray) ::Union{IntersectionPoint,Nothing}
     ray_local_origin = ray_local.origin
     ray_local_direction = ray_local.direction
 
-    #w2o = sphere.world2object
-    #ray_local_origin = ptransform(w2o, ray.origin)
-    #ray_local_direction = vtransform(w2o, ray.direction)
-
     A = dot(ray_local_direction, ray_local_direction)
     B = 2.0f0 * dot(ray_local_origin, ray_local_direction)
     C = dot(ray_local_origin, ray_local_origin) - sphere.radius^2
