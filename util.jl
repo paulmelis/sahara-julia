@@ -46,8 +46,7 @@ function create_orthonormal_basis(w) ::Tuple{vec3,vec3}
 
     @assert (abs(norm(w) - 1.0) < 1.0e-6)
     
-    # XXX can probably be done more efficiently :)
-    t = Float32[w[1], w[2], w[3]]
+    t = MVector(w)
 
     # Set smallest magnitude component of t to 1
     ci = 1
