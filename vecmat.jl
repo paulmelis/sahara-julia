@@ -98,18 +98,18 @@ function mat4_rotate(angle, x, y, z) ::mat4
     c = cos(angle_r)
     s = sin(angle_r)
     
-    # precalc 1-c
-    m[1,1] = x*x*(1.0-c) + c
-    m[1,2] = x*y*(1.0-c) + z*s
-    m[1,3] = x*z*(1.0-c) - y*s
+    f = 1.0f0 - c
+    m[1,1] = x*x*f + c
+    m[1,2] = x*y*f + z*s
+    m[1,3] = x*z*f - y*s
 
-    m[2,1] = x*y*(1.0-c) - z*s
-    m[2,2] = y*y*(1.0-c) + c
-    m[2,3] = y*z*(1.0-c) + x*s
+    m[2,1] = x*y*f - z*s
+    m[2,2] = y*y*f + c
+    m[2,3] = y*z*f + x*s
 
-    m[3,1] = x*z*(1.0-c) + y*s
-    m[3,2] = y*z*(1.0-c) - x*s
-    m[3,3] = z*z*(1.0-c) + c
+    m[3,1] = x*z*f + y*s
+    m[3,2] = y*z*f - x*s
+    m[3,3] = z*z*f + c
 
     m[4,4] = 1.0
 
