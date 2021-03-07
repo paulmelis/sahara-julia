@@ -9,6 +9,9 @@ const print_lock = SpinLock()
 
 function f(work_channel, result_channel)
     v = Threads.threadid()
+    if v == 1
+        return
+    end
     
     lock(print_lock) do
         Core.println("$(v) | started")

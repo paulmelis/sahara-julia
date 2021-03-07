@@ -1,69 +1,43 @@
 using Base.Threads
 import Base.Threads.@spawn
-using Random
 
-println("$(Threads.nthreads()) threads")
+println("nthreads() = $(Threads.nthreads())")
 
-# https://discourse.julialang.org/t/print-functions-in-a-threaded-loop/12112/8?u=paulmelis
-const print_lock = SpinLock()
+# https://discourse.julialang.org/t/print-functions-in-a-threaded-loop/12112/8
+const print_lock = ReentrantLock()
 
-function f(index, work_channel, result_channel)
-    v = Threads.threadid()
-    
+function safe_println(s)
     lock(print_lock) do
-        Core.println("[$(index)] $(v) | started")
+        Core.println(s)
     end
-    
-    if index > 0
-        worker(index, work_channel, result_channel)
-    else 
-        main(work_channel, result_channel)
-    end
-    
 end
 
-# Process results as they come in    
-function main(work_channel, result_channel)
-    v = Threads.threadid()
-    
-    for i in 1:D
-        tid, index = take!(result_channel)
-        lock(print_lock) do
-            Core.println("main | got result $(tid), $(index)")
-        end
-        r[index] = tid
-    end
-    
-end
-    
 function worker(index, work_channel, result_channel)
 
-    v = Threads.threadid()
+    tid = Threads.threadid()
+    safe_println("[$(tid)] worker $(index) | started")
     
     while true
-            
-        work = take!(work_channel)
-        
-        lock(print_lock) do
-            Core.println("[$(index)] $(v) | got work to do: $(work)")
-        end
+
+        work = take!(work_channel)       
+        safe_println("[$(tid)] worker $(index) | got work to do: $(work)")
         
         if work === nothing
             # Sentinel, all work done
+            safe_println("[$(tid)] worker $(index) | done")
             return
         end
         
-        # Spin
+        # Spin, simulate work of at least index seconds
         t0 = time()
-        while time() - t0 < v end
-        
-        # Produce result
-        result = (v, work)
-        
-        lock(print_lock) do
-            Core.println("[$(index)] $(v) | producing result $(result)")
+        dummy = 0
+        while (time() - t0) < index 
+            dummy += 1
         end
         
+        # Produce result
+        result = (index, tid, work)
+        safe_println("[$(tid)] worker $(index) | producing result $(result)")
         put!(result_channel, result)
     end
 end
@@ -71,25 +45,43 @@ end
 D = 10                  # Data items
 W = Threads.nthreads()  # Worker threads
 
-r = zeros(Int, D)
 work_channel = Channel{Union{Int,Nothing}}(D+W)
-result_channel = Channel{Tuple{Int,Int}}(D)
+result_channel = Channel{Tuple{Int,Int,Int}}(D)
 
 # Place work in the queue
-for i in 1:D
+safe_println("Scheduling $(D) work items")
+for i = 1:D
     put!(work_channel, i)
 end
 
 # Push sentinels, one per worker thread
-for i in 1:W
+for i = 1:W
     put!(work_channel, nothing)
 end
 
 # Start worker threads
-println("Starting $(W) worker threads")
-@threads for i = 0:W
-    f(i, work_channel, result_channel)    
+tasks = []
+safe_println("[main] Starting $(W) tasks")
+for i = 1:W
+    t = @spawn worker(i, work_channel, result_channel)    
+    safe_println("[main] worker $(i): $(t)")
+    push!(tasks, t)
 end
 
-println("worker threads done")
-println(r)
+# Wait for all work to complete
+safe_println("[main] Waiting for work completion")    
+
+r = zeros(Int, D)
+for i = 1:D
+    wid, tid, work = take!(result_channel)
+    r[work] = tid
+    safe_println("[main] Got $(work) from worker $(wid) (thread $(tid))")
+end
+
+safe_println("[main] Received all work items")    
+safe_println("[main] $(r)")
+
+safe_println("[main] Waiting for task completion")
+for t in tasks 
+    wait(t)
+end

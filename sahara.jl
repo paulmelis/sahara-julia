@@ -47,9 +47,9 @@ function render(seed)
 
     #SQRT_NUM_SAMPLES = 1
     #SQRT_NUM_SAMPLES = 2
-    SQRT_NUM_SAMPLES = 4
+    #SQRT_NUM_SAMPLES = 4
     #SQRT_NUM_SAMPLES = 8
-    #SQRT_NUM_SAMPLES = 16
+    SQRT_NUM_SAMPLES = 16
     #SQRT_NUM_SAMPLES = 32
 
     #integrator = "direct"
@@ -164,9 +164,9 @@ end
 
 using Profile
 
-output_image = render(123456)
+#output_image = render(123456)
 #output_image = @time render(123456)
-#output_image = @btime render(123456)
+output_image = @btime render(123456)
 
 println("Saving output file")
 
