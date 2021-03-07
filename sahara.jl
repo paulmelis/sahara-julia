@@ -5,14 +5,13 @@ using Random
 using Distributions
 using FileIO, PNGFiles
 using Images
-using Base.Threads
-using ThreadPools
 using LinearAlgebra
 using StaticArrays
-using Sobol
+#using Sobol
 import Base.length
 import Base.+, Base.-, Base.*
 import Base.^
+import Base.Threads.@spawn
 
 include("constants.jl")
 include("vecmat.jl")
@@ -24,14 +23,16 @@ include("camera.jl")
 include("lights.jl")
 include("worker.jl")
 
-# https://discourse.julialang.org/t/print-functions-in-a-threaded-loop/12112/8
-const image_lock = SpinLock()
+const image_lock = ReentrantLock()
 
-function safe_print(s)
-    lock(print_lock) do
-        Core.println(s)
-    end
-end
+# https://discourse.julialang.org/t/print-functions-in-a-threaded-loop/12112/8
+#const print_lock = ReentrantLock()
+#
+#function safe_println(s)
+#    lock(print_lock) do
+#        Core.println(s)
+#    end
+#end
 
 function render(seed)
 
@@ -97,6 +98,8 @@ function render(seed)
     # crop_window = (left, top, right, bottom), all inclusive
     crop_window = nothing
     #crop_window = (333, 396, 333, 396)
+    
+    bucket_order = collect(buckets_reading_order(IMAGE_WIDTH, IMAGE_HEIGHT, crop_window))    
 
     scene_data = (
         integrator = integrator,
@@ -104,51 +107,41 @@ function render(seed)
         primitives = primitives,
         lights = lights,
         pixel_sample_locations = pixel_sample_locations,
-        crop_window = crop_window,
+        crop_window = crop_window
     )
 
     output_image = zeros(RGB{Float32}, IMAGE_HEIGHT, IMAGE_WIDTH)
+    overall_ray_stats = RayStats()
     
     println("Starting rendering $(IMAGE_WIDTH)x$(IMAGE_HEIGHT), $(SQRT_NUM_SAMPLES*SQRT_NUM_SAMPLES) spp, $(Threads.nthreads()) threads")
     
-    # @qthreads doesn't handle generator?    
-    bucket_order = collect(buckets_reading_order(IMAGE_WIDTH, IMAGE_HEIGHT, crop_window))
-    
-    overall_ray_stats = RayStats()
-    
     progress = Progress(length(bucket_order))
+    tasks = Task[]
     
     #for bucket::Tuple{Int,Int,Int,Int} in ProgressBar(bucket_order)
-    @qthreads for bucket::Tuple{Int,Int,Int,Int} in bucket_order
-        #println("Processing bucket $(bucket)")
-        pixels, ray_stats = process_bucket(scene_data, bucket)
-        #println(pixels)
-        
-        left = bucket[1]+1
-        top = bucket[2]+1
-        
-        lock(image_lock) do        
-            output_image[top:top+BUCKET_SIZE-1, left:left+BUCKET_SIZE-1] .= pixels            
-            add!(overall_ray_stats, ray_stats)
+    for bucket in bucket_order
+    
+        t = @spawn begin
+            #println("Processing bucket $(bucket)")
+            pixels, ray_stats = process_bucket(scene_data, bucket)
+            #println(pixels)
+                        
+            lock(image_lock) do
+                #safe_println("Bucket $(bucket) done")
+                left = bucket[1]+1
+                top = bucket[2]+1                
+                output_image[top:top+BUCKET_SIZE-1, left:left+BUCKET_SIZE-1] .= pixels            
+                add!(overall_ray_stats, ray_stats)                
+            end
+            
+            ProgressMeter.next!(progress)
+            yield()
         end
-        
-        ProgressMeter.next!(progress)
+        push!(tasks, t)
         
     end
     
-    #@qthreads for bucket in bucket_order
-    #
-    #    safe_print("Starting bucket $(bucket)")
-    #
-    #    # Render bucket
-    #    pixels = process_bucket(scene_data, bucket)
-    #    
-    #    safe_print("Got pixels $(pixels)")
-    #    
-    #    # Paste into image
-    #    # XXX lock image
-    #    
-    #end
+    wait.(tasks)
     
     println(overall_ray_stats)
     
