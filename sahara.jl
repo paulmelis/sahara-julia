@@ -157,9 +157,9 @@ end
 
 using Profile
 
-#output_image = render(123456)
+output_image = render(123456)
 #output_image = @time render(123456)
-output_image = @btime render(123456)
+#output_image = @btime render(123456)
 
 println("Saving output file")
 
