@@ -1,6 +1,6 @@
 # The snake and the serpent - a journey of two languages
 
-Note: this was written in March 2021, some things will have changed in the Julia ecosystem since then.
+Note: this was written in March 2021 using Julia 1.6RC1, some things will have changed in the Julia ecosystem since then.
 
 I'm a fairly novice user when it comes to Julia, only starting to dabble in it the summer of 2020. My day-to-day chosen languages for development are mostly Python and sometimes a bit of C++ for when things really need high performance. But whenever I can get away with using Python I prefer it, as it allows higher-level and cleaner code (yes, this is debatable ;-)), with lots of useful packages you can take advantage of.
 
