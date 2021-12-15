@@ -22,7 +22,7 @@ As a side-note: just to compare and get some idea of speed of the Python code I 
 
 ![](images/blender-render.png)
 
-It turned out that porting the Python code to Julia was fairly straightforward. They're both high-level languages with similar constructs and data types. For example, a class and its method in the Python code could be translated into Julia `struct` plus a similar set of methods (only basic OO constructs were used in the Python code anyway). Where I had used custom classes for 4x4 matrices and vectors in the Python code I initially used the built-in `Matrix` and `Vector` types in Julia, but see below for more on this.
+It turned out that porting the Python code to Julia was fairly straightforward, initially. They're both high-level languages with similar constructs and data types. For example, a class and its method in the Python code could be translated into Julia `struct` plus a similar set of methods (only basic OO constructs were used in the Python code anyway). Where I had used custom classes for 4x4 matrices and vectors in the Python code I initially used the built-in `Matrix` and `Vector` types in Julia, but see below for more details on where it went from this starting point.
 
 ## Threading issues (part 1)
 
