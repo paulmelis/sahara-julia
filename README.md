@@ -158,7 +158,7 @@ struct HemisphericalLight <: Light
 end
 ```
 
-In C++ I would have placed the `strength` field in the `Light` supertype (all lights have a strength), but in Julia *abstract types cannot contain fields*. But unfortunately concrete types, which *can* contain fields, can not have subtypes. These typing restrictions are really hard to swallow at first when you're used to OOP, by the way, they feel unnecessarily strict.
+In C++ I would have placed the `strength` field in the `Light` supertype (all lights have a strength), but in Julia *abstract types cannot contain fields*. But unfortunately concrete types, which *can* contain fields, can not have subtypes. These typing restrictions are really hard to swallow at first when you're used to OOP, by the way, they feel unnecessarily strict (but are apparently for optimization reasons).
 
 Anyways, during porting from Python I did the next best thing, which is to give both concrete light types a `strength` field. This field should therefore always be available when accessing `light.strength` as long as `light` is an instance of `PointLight` or `HemisphericalLight`. But the variable `light` in the loop above is of type `Light`, which is abstract (and thus contains no fields). So the Julia compiler can not assume it has a field `strength` and therefore also doesn't know its type. Hence the type of `light.strength` is reluctantly assumed to be `Any`.
 
@@ -292,7 +292,7 @@ Julia (1.6 RC1)            | 1 thread | 33.088
 Julia (1.6 RC1)            | 4 threads | 8.860
 Blender (2.92, Cycles CPU) | 4 threads | 10.96*
 
-Although there probably are still some tricks available to improve the Julia code somewhat, I'm really happy with how well this turned out.
+Although there probably are still some tricks available to improve the Julia code somewhat (like SIMD macros), I'm really happy with how well this turned out.
 
 I briefly looked into using [Numba](https://numba.pydata.org/), as that seems like another interesting contender for speeding up Python code. But with Numba 0.52 installed through Conda I could not get it to work on the original Python rendering code. Decorating just a few of the most-called function with `@jit(nopython=True)` produced errors, apparently with the type inferencing step in Numba (`Cannot determine Numba type of <class 'type'>`). Perhaps I'll revisit Numba at some point, as I'm still interested in its performance compared to PyPy. Although I do wonder how use of `multiprocessing` will be affected by the time needed to JIT compile the code, as each worker process might need to do a separate JIT step, causing more slowdown than needed, unless code caching can be used. 
 
