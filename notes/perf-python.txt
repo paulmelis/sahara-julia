@@ -1,0 +1,21 @@
+Python 3.9.2
+
+512x512 256 spp 4 workers
+Rendering ... done in 2659.075s
+Total time 2659.122s
+num_primary_rays: 67,108,864
+num_shadow_rays: 84,278,714
+num_indirect_rays: 31,608,552
+worker_input_queue_wait: 0.044707298278808594
+worker_output_queue_wait: 0.008149862289428711
+
+PyPy 3.7.9
+
+512x512 256 spp 4 workers
+Rendering ... done in 162.411s
+Total time 162.613s
+num_primary_rays: 67,108,864
+num_shadow_rays: 84,277,232
+num_indirect_rays: 31,604,533
+worker_input_queue_wait: 0.14805841445922852
+worker_output_queue_wait: 0.045738935470581055

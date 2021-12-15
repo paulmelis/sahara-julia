@@ -1,0 +1,81 @@
+Julia 1.6 RC1
+512x512 pixels
+@btime (aka min time), same seed, no image save
+
+1 thread
+--------
+
+1 SPP
+RayStats(262144, 329328, 123513)
+  413.442 ms (9908257 allocations: 431.25 MiB)
+
+4 SPP
+RayStats(1048576, 1316278, 493712)
+  1.632 s (39598198 allocations: 1.67 GiB)
+
+16 SPP
+RayStats(4194304, 5267902, 1974723)
+  6.552 s (158412351 allocations: 6.64 GiB)
+
+64 SPP
+RayStats(16777216, 21072736, 7901252)
+  26.064 s (633706290 allocations: 26.56 GiB)
+
+256 SPP
+RayStats(67108864, 84285616, 31604386)
+  103.180 s (2534669102 allocations: 106.22 GiB)
+
+@time stats on GC:
+RayStats(67108864, 84285616, 31604386)
+107.391299 seconds (2.54 G allocations: 106.469 GiB, 5.91% gc time, 2.72% compilation time)
+6.346749s GC, 2.921008s compilation
+
+182,998,866 rays
+1,773,588.54429 rays/s
+
+2 threads
+---------
+
+1 SPP
+RayStats(262144, 329322, 123674)
+  276.260 ms (9901318 allocations: 430.95 MiB)
+
+4 SPP
+RayStats(1048576, 1317370, 494646)
+  1.081 s (39599031 allocations: 1.67 GiB)
+
+16 SPP
+RayStats(4194304, 5266332, 1974372)
+  4.305 s (158356004 allocations: 6.64 GiB)
+  
+64 SPP
+RayStats(16777216, 21068382, 7899955)
+  17.218 s (633612558 allocations: 26.56 GiB)
+
+256 SPP
+RayStats(67108864, 84281922, 31599363)
+  73.436 s (2534539704 allocations: 106.21 GiB)
+
+
+4 threads
+---------
+
+1 SPP
+RayStats(262144, 329336, 123517)
+  197.548 ms (9898340 allocations: 430.82 MiB)
+
+4 SPP
+RayStats(1048576, 1316748, 493790)
+  845.488 ms (39582684 allocations: 1.66 GiB)
+
+16 SPP
+RayStats(4194304, 5268740, 1976510)
+  3.498 s (158408046 allocations: 6.64 GiB)
+  
+64 SPP
+RayStats(16777216, 21074002, 7901346)
+  14.171 s (633724927 allocations: 26.56 GiB)
+
+256 SPP
+RayStats(67108864, 84280428, 31605607)
+  60.846 s (2534621164 allocations: 106.22 GiB)
