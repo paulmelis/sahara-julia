@@ -223,7 +223,7 @@ Some allocations will remain as these are hard to get rid of, for example the ar
 
 ## Threading issues (part 2)
 
-Path tracing (and ray tracing in general) is a so-called "embarrassingly parallel" problem. You can subdivide the image to render into independent parts, say blocks of 32x32 pixels, and have multiple compute threads each work on a set of parts in parallel, without any of the threads needing to interact with each other. When finished simply combine all the rendered parts to get the final output image.
+Path tracing, and ray tracing in general, is a so-called "embarrassingly parallel" problem. You can subdivide the image to render into independent parts, say blocks of 32x32 pixels, and have multiple compute threads each work on a set of parts in parallel, without any of the threads needing to interact with each other. When finished simply combine all the rendered parts to get the final output image.
 
 But adding multi-threading turned out to be less straightforward in Julia compared to either C++ or Python, as the Julia approach to multi-threading (or parallel processing in general) aims to be more user-friendly and composable. The latter means that when you would use multiple Julia packages that take advantage of parallel processing together they should play nice with each other instead of fighting over processing power and/or interfering with each other. 
 
@@ -232,7 +232,9 @@ By writing code in terms of tasks instead of threads allows packages to work tog
 
 One of the interesting aspects here is that you need to start Julia with `-t <n>` to specify the number of available OS threads within Julia, instead of that number being derived from (say) the available number of CPU cores. And by default `n` is 1, so multi-threading is disabled unless requested.
 
-Using the task-based framework here is the code that kicks off the parallel rendering of each image part (bucket). It also stores the incoming results into the final image and gathers statistics on total number of rays traced:
+Using the task-based framework, below is the code that kicks off the parallel rendering of each image part (called a bucket). The pixels in each bucket are rendered
+as a separate task, which also stores the incoming results into the final image and adds its statistics on total number of rays traced. Each task gets `@spawn`ed
+and the Julia runtime takes care of the rest, we only have to `wait()` for all tasks to finish.
 
 ```
     tasks = Task[]
@@ -257,7 +259,7 @@ Using the task-based framework here is the code that kicks off the parallel rend
     wait.(tasks)
 ```
 
-Note that the above code will work independently of the number of available threads. All relevant constructs (e.g. `@spawn`, `lock` and `Task`) come from the Julia standard library. Plus this is the only place in the rendering code where any kind of handling of parallelism is present, showing how concise and powerful the task-based approach is.
+Note that the above code will work independently of the number of available threads. All relevant constructs, e.g. `@spawn`, `lock` and `Task`, come from the Julia standard library. Plus this is the only place in the rendering code where any kind of handling of parallelism is present, showing how concise and powerful the task-based approach is.
 
 Rendering an image of 512x512 pixels at 256 samples per pixel using different numbers of OS-level threads then gives the following timings:
 
