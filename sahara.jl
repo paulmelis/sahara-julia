@@ -113,7 +113,7 @@ function render(seed)
     output_image = zeros(RGB{Float32}, IMAGE_HEIGHT, IMAGE_WIDTH)
     overall_ray_stats = RayStats()
     
-    println("Starting rendering $(IMAGE_WIDTH)x$(IMAGE_HEIGHT), $(SQRT_NUM_SAMPLES*SQRT_NUM_SAMPLES) spp, $(Threads.nthreads()) threads")
+    println("Starting rendering $(IMAGE_WIDTH)x$(IMAGE_HEIGHT), $(SQRT_NUM_SAMPLES*SQRT_NUM_SAMPLES) spp, $(Threads.nthreads()) threads, $(length(bucket_order)) buckets")
     
     progress = Progress(length(bucket_order))
     tasks = Task[]
@@ -134,8 +134,8 @@ function render(seed)
                 add!(overall_ray_stats, ray_stats)                
             end
             
-            ProgressMeter.next!(progress)
-            yield()
+            next!(progress)
+            #yield()
         end
         push!(tasks, t)
         
@@ -163,8 +163,8 @@ output_image = render(123456)
 
 println("Saving output file")
 
-#save(File(format"PNG", "out.png"), output_image)
-save(File(format"TIFF", "out.tif"), output_image)
+save(File(format"PNG", "out.png"), output_image)
+#save(File(format"TIFF", "out.tif"), output_image)
 
 #Profile.clear_malloc_data()
 
